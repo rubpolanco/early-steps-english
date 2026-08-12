@@ -34,6 +34,11 @@ export default async function ParentBillingPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-brand-navy text-sm">{inv.period_label}</p>
                         <p className="text-xs text-brand-navy/60">{s.due} {inv.due_date} · {s.paidAmountLabel} {formatMoney(paid)} {s.of} {formatMoney(inv.amount)}</p>
+                        {inv.tax_amount > 0 && (
+                          <p className="text-[11px] text-brand-navy/45">
+                            {s.subtotalLabel} {formatMoney(inv.subtotal)} + {s.itebisLabel} {formatMoney(inv.tax_amount)}
+                          </p>
+                        )}
                       </div>
                       <p className="font-semibold text-brand-navy">{formatMoney(inv.amount)}</p>
                       <Badge color={inv.status === "paid" ? "green" : isOverdue ? "red" : inv.status === "partial" ? "yellow" : "gray"}>

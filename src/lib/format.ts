@@ -29,8 +29,11 @@ export function parsePotty(json: string | null): PottyEntry[] {
   }
 }
 
+// The school operates in the Dominican Republic, so all money in the app
+// is priced and displayed in Dominican Pesos (DOP), formatted the way
+// "es-DO" conventionally renders it: "RD$1,234.50".
 export function formatMoney(amount: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP" }).format(amount);
 }
 
 export function formatDate(iso: string) {

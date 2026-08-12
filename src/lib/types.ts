@@ -157,7 +157,14 @@ export interface Invoice {
   student_id: string;
   tuition_plan_id: string | null;
   period_label: string;
+  /** Tax-inclusive total due — what's actually owed on this invoice. */
   amount: number;
+  /** Pre-tax amount (ITEBIS not yet applied). */
+  subtotal: number;
+  /** 0.18 when ITEBIS applies to this invoice, 0 otherwise. */
+  tax_rate: number;
+  /** subtotal * tax_rate, rounded to cents. */
+  tax_amount: number;
   due_date: string;
   status: InvoiceStatus;
   created_at: string;

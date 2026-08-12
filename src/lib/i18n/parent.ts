@@ -65,6 +65,8 @@ export const en = {
     of: "of",
     overdue: "Overdue",
     paymentNote: "To make a payment, please contact the school office. Online payments can be enabled once a payment processor is connected.",
+    subtotalLabel: "Subtotal",
+    itebisLabel: "ITEBIS",
   },
   pickupPeople: {
     title: "Pickup People",
@@ -148,6 +150,8 @@ export const es: ParentDictionary = {
     of: "de",
     overdue: "Vencida",
     paymentNote: "Para realizar un pago, por favor comunícate con la oficina de la escuela. Los pagos en línea podrán habilitarse una vez que se conecte un procesador de pagos.",
+    subtotalLabel: "Subtotal",
+    itebisLabel: "ITEBIS",
   },
   pickupPeople: {
     title: "Personas autorizadas",

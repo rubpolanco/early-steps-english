@@ -257,6 +257,12 @@ export const en = {
     paymentHistoryHeading: "Payment history",
     noPaymentsRecorded: "No payments recorded.",
     paymentProcessorNote: "Note: this records payments manually. Connecting a real payment processor (e.g. Stripe) would require API keys you provide.",
+    subtotalLabel: "Subtotal",
+    itebisLabel: "ITEBIS (18%)",
+    applyItebisLabel: "Apply ITEBIS (18%)",
+    itebisNote: "ITEBIS is the Dominican Republic's value-added tax. Some educational services may be exempt — confirm the right treatment for tuition with your accountant.",
+    amountBeforeTaxPlaceholder: "Amount (before ITEBIS)",
+    amountExceedsBalanceNote: "Payments are automatically capped at the remaining balance.",
   },
 };
 
@@ -517,5 +523,11 @@ export const es: StaffDictionary = {
     paymentHistoryHeading: "Historial de pagos",
     noPaymentsRecorded: "No hay pagos registrados.",
     paymentProcessorNote: "Nota: esto registra pagos manualmente. Conectar un procesador de pagos real (ej. Stripe) requeriría las claves de API que tú proporciones.",
+    subtotalLabel: "Subtotal",
+    itebisLabel: "ITEBIS (18%)",
+    applyItebisLabel: "Aplicar ITEBIS (18%)",
+    itebisNote: "El ITEBIS es el impuesto sobre transferencia de bienes y servicios de República Dominicana. Algunos servicios educativos pueden estar exentos — confirma el tratamiento correcto para la colegiatura con tu contador.",
+    amountBeforeTaxPlaceholder: "Monto (antes de ITEBIS)",
+    amountExceedsBalanceNote: "Los pagos se limitan automáticamente al saldo pendiente.",
   },
 };

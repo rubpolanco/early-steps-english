@@ -211,6 +211,32 @@ CREATE TABLE IF NOT EXISTS documents (
 );
 `;
 
+// The `invoices` table predates ITEBIS (Dominican VAT) support, and the
+// live production database already has real invoices in it — `CREATE TABLE
+// IF NOT EXISTS` won't retroactively add columns to a table that already
+// exists. This runs an idempotent, additive migration on every connection:
+// safe to run against a fresh dev database (columns already exist via
+// SCHEMA... no, SCHEMA doesn't include them, so this always adds them the
+// first time) and safe to re-run against a database that already has them
+// (each ALTER is guarded by a table_info check).
+function ensureInvoiceTaxColumns(conn: DatabaseSync) {
+  const cols = conn.prepare("PRAGMA table_info(invoices)").all() as unknown as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has("subtotal")) {
+    conn.exec("ALTER TABLE invoices ADD COLUMN subtotal REAL");
+  }
+  if (!names.has("tax_rate")) {
+    conn.exec("ALTER TABLE invoices ADD COLUMN tax_rate REAL NOT NULL DEFAULT 0");
+  }
+  if (!names.has("tax_amount")) {
+    conn.exec("ALTER TABLE invoices ADD COLUMN tax_amount REAL NOT NULL DEFAULT 0");
+  }
+  // Backfill any invoices created before this migration (or before tax
+  // tracking existed) so every row has a consistent subtotal/tax split —
+  // treated as tax-free at the old `amount`, since that's what was charged.
+  conn.exec("UPDATE invoices SET subtotal = amount WHERE subtotal IS NULL");
+}
+
 function createConnection() {
   const conn = new DatabaseSync(DB_PATH);
   // Give concurrent writers room to queue instead of failing instantly
@@ -220,6 +246,7 @@ function createConnection() {
   conn.exec("PRAGMA journal_mode = WAL");
   conn.exec("PRAGMA foreign_keys = ON");
   conn.exec(SCHEMA);
+  ensureInvoiceTaxColumns(conn);
   return conn;
 }
 
@@ -235,19 +262,19 @@ function getDb(): DatabaseSync {
 
 // `db` looks like a normal DatabaseSync, but the real connection isn't
 // opened (and the schema isn't run) until something actually calls a
-// method on it -- e.g. `db.prepare(...)` from inside a query function at
+// method on it — e.g. `db.prepare(...)` from inside a query function at
 // real request time.
 //
 // This laziness matters specifically for `next build`. Next's "Collecting
 // page data" step imports every route's modules (including this one,
-// transitively, through queries.ts) using dozens of parallel worker
-// processes just to read each route's static config -- it never actually
+// transitively, through queries.ts) using ~dozens of parallel worker
+// processes just to read each route's static config — it never actually
 // calls a query function. If we opened + migrated the SQLite file eagerly
 // at import time (the old behavior), all of those worker processes would
 // race to open and write-migrate the same file at once, and lose that
 // race with a "database is locked" (SQLITE_BUSY) error. Deferring the
 // real connection until first genuine use means the build never touches
-// the file at all -- only the single running server process does, at
+// the file at all — only the single running server process does, at
 // runtime, one at a time.
 export const db = new Proxy(
   {},

@@ -36,7 +36,15 @@ export default async function InvoiceDetailPage({
       <div className="card p-5">
         <p className="font-semibold text-brand-navy">{student?.first_name} {student?.last_name}</p>
         <p className="text-sm text-brand-navy/60 mb-3">{s.duePrefix} {invoice.due_date}</p>
-        <div className="flex justify-between text-sm mb-1">
+        <div className="flex justify-between text-sm mb-1 text-brand-navy/70">
+          <span>{s.subtotalLabel}</span><span>{formatMoney(invoice.subtotal)}</span>
+        </div>
+        {invoice.tax_amount > 0 && (
+          <div className="flex justify-between text-sm mb-1 text-brand-navy/70">
+            <span>{s.itebisLabel}</span><span>{formatMoney(invoice.tax_amount)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-sm mb-1 pt-1 border-t border-brand-navy/10">
           <span>{s.totalLabel}</span><span className="font-semibold">{formatMoney(invoice.amount)}</span>
         </div>
         <div className="flex justify-between text-sm mb-1">
@@ -66,7 +74,7 @@ export default async function InvoiceDetailPage({
           <SectionTitle>{s.recordPayment}</SectionTitle>
           <form action={recordPayment} className="card p-4 space-y-2">
             <input type="hidden" name="invoiceId" value={invoice.id} />
-            <input name="amount" type="number" step="0.01" defaultValue={balance} className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+            <input name="amount" type="number" step="0.01" min="0.01" max={balance} defaultValue={balance} className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
             <select name="method" className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm">
               <option value="cash">{s.cash}</option>
               <option value="card">{s.card}</option>
@@ -76,6 +84,9 @@ export default async function InvoiceDetailPage({
             <button type="submit" className="btn-primary w-full py-2 text-sm">{s.recordPayment}</button>
           </form>
           <p className="text-xs text-brand-navy/50 mt-2">
+            {s.amountExceedsBalanceNote}
+          </p>
+          <p className="text-xs text-brand-navy/50 mt-1">
             {s.paymentProcessorNote}
           </p>
         </div>

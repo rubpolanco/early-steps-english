@@ -23,9 +23,13 @@ export default async function BillingPage() {
   const { t } = await getDict();
   const s = t.staffApp.billing;
 
+  const today = new Date().toISOString().slice(0, 10);
+  const isOverdue = (inv: { status: string; due_date: string }) =>
+    inv.status !== "paid" && inv.due_date < today;
+
   const totalOutstanding = invoices.filter((i) => i.status !== "paid").reduce((sum, i) => sum + i.amount, 0);
   const totalCollected = invoices.filter((i) => i.status === "paid").reduce((sum, i) => sum + i.amount, 0);
-  const overdueCount = invoices.filter((i) => i.status !== "paid" && i.due_date < new Date().toISOString().slice(0, 10)).length;
+  const overdueCount = invoices.filter(isOverdue).length;
 
   return (
     <div className="space-y-8">
@@ -41,17 +45,22 @@ export default async function BillingPage() {
         <SectionTitle>{s.invoicesHeading}</SectionTitle>
         <div className="card divide-y divide-brand-navy/5">
           {invoices.map((inv) => {
-            const isOverdue = inv.status !== "paid" && inv.due_date < new Date().toISOString().slice(0, 10);
+            const overdue = isOverdue(inv);
             const statusKey = inv.status as keyof typeof STATUS_LABEL_KEY;
             return (
               <Link key={inv.id} href={`/billing/${inv.id}`} className="flex items-center gap-3 p-4 hover:bg-brand-sky-light/40">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-brand-navy text-sm">{inv.first_name} {inv.last_name} — {inv.period_label}</p>
                   <p className="text-xs text-brand-navy/60">{s.duePrefix} {inv.due_date}</p>
+                  {inv.tax_amount > 0 && (
+                    <p className="text-[11px] text-brand-navy/45">
+                      {s.subtotalLabel} {formatMoney(inv.subtotal)} + {s.itebisLabel} {formatMoney(inv.tax_amount)}
+                    </p>
+                  )}
                 </div>
                 <p className="font-semibold text-brand-navy">{formatMoney(inv.amount)}</p>
-                <Badge color={inv.status === "paid" ? "green" : isOverdue ? "red" : inv.status === "partial" ? "yellow" : "gray"}>
-                  {isOverdue ? s.overdueBadge : s[STATUS_LABEL_KEY[statusKey]]}
+                <Badge color={inv.status === "paid" ? "green" : overdue ? "red" : inv.status === "partial" ? "yellow" : "gray"}>
+                  {overdue ? s.overdueBadge : s[STATUS_LABEL_KEY[statusKey]]}
                 </Badge>
               </Link>
             );
@@ -73,9 +82,14 @@ export default async function BillingPage() {
               {plans.map((p) => <option key={p.id} value={p.id}>{p.name} — {formatMoney(p.amount)}</option>)}
             </select>
             <input name="periodLabel" placeholder={s.periodPlaceholder} required className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
-            <input name="amount" type="number" step="0.01" placeholder={s.amount} required className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+            <input name="amount" type="number" step="0.01" min="0.01" placeholder={s.amountBeforeTaxPlaceholder} required className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
             <input name="dueDate" type="date" required className="w-full rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+            <label className="flex items-start gap-2 text-xs text-brand-navy/70 pt-1">
+              <input type="checkbox" name="applyTax" value="yes" defaultChecked className="mt-0.5" />
+              <span>{s.applyItebisLabel}</span>
+            </label>
             <button type="submit" className="btn-primary w-full py-2 text-sm">{s.createInvoiceHeading}</button>
+            <p className="text-[11px] text-brand-navy/45 pt-1">{s.itebisNote}</p>
           </form>
         </div>
 
