@@ -265,7 +265,7 @@ export function fullName(p: { first_name: string; last_name: string }) {
   return `${p.first_name} ${p.last_name}`;
 }
 
-export function calcAge(dob: string | null): string {
+export function calcAge(dob: string | null, locale: "en" | "es" = "en"): string {
   if (!dob) return "—";
   const birth = new Date(dob);
   const now = new Date();
@@ -275,6 +275,10 @@ export function calcAge(dob: string | null): string {
   if (now.getDate() < birth.getDate()) months -= 1;
   const years = Math.floor(months / 12);
   const remMonths = months % 12;
+  if (locale === "es") {
+    if (years < 1) return `${months} mes${months === 1 ? "" : "es"}`;
+    return `${years}a ${remMonths}m`;
+  }
   if (years < 1) return `${months} mo`;
   return `${years}y ${remMonths}mo`;
 }

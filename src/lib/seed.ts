@@ -32,7 +32,7 @@ export async function ensureSeeded() {
     "Early Steps English",
     "English Activity Center · Centro de Inglés Infantil",
     "Av. Winston Churchill 500, Santo Domingo, Dominican Republic",
-    "(809) 555-0142",
+    "(809) 293-0680",
     "hello@earlystepsenglish.com"
   );
 

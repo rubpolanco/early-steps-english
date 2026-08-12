@@ -2,15 +2,18 @@ import { getSession } from "@/lib/auth";
 import { getStudentsForGuardian, getInvoicesForStudent, getPaymentsForInvoice } from "@/lib/queries";
 import { formatMoney } from "@/lib/format";
 import { SectionTitle, Badge, EmptyState, Avatar } from "@/components/ui";
+import { getDict } from "@/lib/i18n";
 
 export default async function ParentBillingPage() {
   const session = await getSession();
   if (!session) return null;
   const children = getStudentsForGuardian(session.sub);
+  const { t } = await getDict();
+  const s = t.parentApp.billing;
 
   return (
     <div className="space-y-10">
-      <SectionTitle>Billing</SectionTitle>
+      <SectionTitle>{s.title}</SectionTitle>
       {children.map((child) => {
         const invoices = getInvoicesForStudent(child.id);
         return (
@@ -20,21 +23,21 @@ export default async function ParentBillingPage() {
               <p className="font-heading font-bold text-brand-navy">{child.first_name}</p>
             </div>
             {invoices.length === 0 ? (
-              <EmptyState icon="💳" title="No invoices yet" />
+              <EmptyState icon="💳" title={s.noInvoices} />
             ) : (
               <div className="card divide-y divide-brand-navy/5">
                 {invoices.map((inv) => {
-                  const paid = getPaymentsForInvoice(inv.id).reduce((s, p) => s + p.amount, 0);
+                  const paid = getPaymentsForInvoice(inv.id).reduce((sum, p) => sum + p.amount, 0);
                   const isOverdue = inv.status !== "paid" && inv.due_date < new Date().toISOString().slice(0, 10);
                   return (
                     <div key={inv.id} className="flex items-center gap-3 p-4">
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-brand-navy text-sm">{inv.period_label}</p>
-                        <p className="text-xs text-brand-navy/60">Due {inv.due_date} · Paid {formatMoney(paid)} of {formatMoney(inv.amount)}</p>
+                        <p className="text-xs text-brand-navy/60">{s.due} {inv.due_date} · {s.paidAmountLabel} {formatMoney(paid)} {s.of} {formatMoney(inv.amount)}</p>
                       </div>
                       <p className="font-semibold text-brand-navy">{formatMoney(inv.amount)}</p>
                       <Badge color={inv.status === "paid" ? "green" : isOverdue ? "red" : inv.status === "partial" ? "yellow" : "gray"}>
-                        {isOverdue ? "Overdue" : inv.status}
+                        {isOverdue ? s.overdue : inv.status === "paid" ? s.paid : inv.status === "partial" ? s.partiallyPaid : s.unpaid}
                       </Badge>
                     </div>
                   );
@@ -45,7 +48,7 @@ export default async function ParentBillingPage() {
         );
       })}
       <p className="text-xs text-brand-navy/50">
-        To make a payment, please contact the school office. Online payments can be enabled once a payment processor is connected.
+        {s.paymentNote}
       </p>
     </div>
   );

@@ -2,17 +2,20 @@ import { getSession } from "@/lib/auth";
 import { getStudentsForGuardian, getPickupPeople } from "@/lib/queries";
 import { Avatar, Badge, SectionTitle } from "@/components/ui";
 import { parentAddPickupPerson, parentRemovePickupPerson } from "./actions";
+import { getDict } from "@/lib/i18n";
 
 export default async function ParentPickupPeoplePage() {
   const session = await getSession();
   if (!session) return null;
   const children = getStudentsForGuardian(session.sub);
+  const { t } = await getDict();
+  const s = t.parentApp.pickupPeople;
 
   return (
     <div className="space-y-10">
-      <SectionTitle>Authorized Pickup People</SectionTitle>
+      <SectionTitle>{s.title}</SectionTitle>
       <p className="text-sm text-brand-navy/70 -mt-6">
-        Add anyone besides yourself who is allowed to pick up your child — a grandparent, an uncle or aunt, a nanny/service maid, a family friend, etc. The front desk will check this list at pickup time.
+        {s.subtitle} {s.frontDeskNote}
       </p>
 
       {children.map((child) => {
@@ -32,24 +35,25 @@ export default async function ParentPickupPeoplePage() {
                     <p className="font-semibold text-brand-navy text-sm">{p.name}</p>
                     <p className="text-xs text-brand-navy/60">{p.relationship} {p.phone && `· ${p.phone}`}</p>
                   </div>
-                  <Badge color="yellow">PIN {p.pin_code}</Badge>
+                  <Badge color="yellow">{s.pinLabel} {p.pin_code}</Badge>
                   <form action={parentRemovePickupPerson}>
                     <input type="hidden" name="studentId" value={child.id} />
                     <input type="hidden" name="pickupId" value={p.id} />
-                    <button className="text-xs text-red-600 hover:underline">Remove</button>
+                    <button className="text-xs text-red-600 hover:underline">{s.remove}</button>
                   </form>
                 </div>
               ))}
-              {pickups.length === 0 && <p className="p-4 text-sm text-brand-navy/60">No one added yet — only parents/guardians can pick up {child.first_name}.</p>}
+              {pickups.length === 0 && <p className="p-4 text-sm text-brand-navy/60">{s.noPeople}</p>}
             </div>
 
             <form action={parentAddPickupPerson} className="card p-4 grid grid-cols-1 sm:grid-cols-4 gap-2">
               <input type="hidden" name="studentId" value={child.id} />
-              <input name="name" placeholder="Full name" required className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
-              <input name="relationship" placeholder="Relationship (e.g. Grandmother, Nanny)" required className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
-              <input name="phone" placeholder="Phone" className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
-              <input name="pin" placeholder="4-digit PIN (optional)" maxLength={4} className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
-              <button type="submit" className="btn-primary px-4 py-2 text-sm sm:col-span-4">+ Add authorized pickup person</button>
+              <input name="name" placeholder={s.fullName} required className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+              <input name="relationship" placeholder={s.relationship} required className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+              <input name="phone" placeholder={s.phone} className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+              <input name="pin" placeholder={`${s.pin} (${t.common.optional})`} maxLength={4} className="rounded-lg border border-brand-navy/15 px-3 py-2 text-sm" />
+              <p className="text-[11px] text-brand-navy/50 sm:col-span-4">{s.pinHint}</p>
+              <button type="submit" className="btn-primary px-4 py-2 text-sm sm:col-span-4">{s.addPerson}</button>
             </form>
           </div>
         );

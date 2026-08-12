@@ -3,6 +3,7 @@ import { getThread, getMessages, getStudent, getClassroom } from "@/lib/queries"
 import { getSession } from "@/lib/auth";
 import { SectionTitle } from "@/components/ui";
 import { sendReply } from "../actions";
+import { getDict } from "@/lib/i18n";
 
 export default async function ThreadPage({
   params,
@@ -16,12 +17,14 @@ export default async function ThreadPage({
   const session = await getSession();
   const student = thread.student_id ? getStudent(thread.student_id) : undefined;
   const classroom = thread.classroom_id ? getClassroom(thread.classroom_id) : undefined;
+  const { t } = await getDict();
+  const s = t.staffApp.messages;
 
   return (
     <div className="max-w-2xl">
       <SectionTitle>{thread.subject}</SectionTitle>
       <p className="text-sm text-brand-navy/60 -mt-3 mb-6">
-        {student ? `About ${student.first_name} ${student.last_name}` : classroom ? `Announcement to ${classroom.name}` : "Whole school announcement"}
+        {student ? `${s.aboutPrefix} ${student.first_name} ${student.last_name}` : classroom ? `${s.announcementToPrefix} ${classroom.name}` : s.wholeSchoolAnnouncement}
       </p>
 
       <div className="card p-4 space-y-4 mb-4 max-h-[50vh] overflow-y-auto">
@@ -34,13 +37,13 @@ export default async function ThreadPage({
             </div>
           </div>
         ))}
-        {messages.length === 0 && <p className="text-sm text-brand-navy/60">No messages yet.</p>}
+        {messages.length === 0 && <p className="text-sm text-brand-navy/60">{s.noMessagesYet}</p>}
       </div>
 
       <form action={sendReply} className="flex gap-2">
         <input type="hidden" name="threadId" value={thread.id} />
-        <input name="body" placeholder="Type a reply..." className="flex-1 rounded-xl border border-brand-navy/15 px-4 py-2.5" />
-        <button type="submit" className="btn-primary px-5 py-2.5">Send</button>
+        <input name="body" placeholder={s.typeMessage} className="flex-1 rounded-xl border border-brand-navy/15 px-4 py-2.5" />
+        <button type="submit" className="btn-primary px-5 py-2.5">{t.common.send}</button>
       </form>
     </div>
   );

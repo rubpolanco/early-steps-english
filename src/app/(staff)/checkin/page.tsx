@@ -5,6 +5,7 @@ import {
 } from "@/lib/queries";
 import { Avatar, Badge, SectionTitle } from "@/components/ui";
 import { checkIn, checkOut } from "./actions";
+import { getDict, translateAgeGroup } from "@/lib/i18n";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -16,6 +17,8 @@ export default async function CheckinPage() {
   const classrooms = getClassrooms(school.id);
   const students = getStudents(school.id, { status: "enrolled" });
   const today = todayIso();
+  const { locale, t } = await getDict();
+  const s = t.staffApp.checkin;
 
   const visibleClassrooms =
     session?.role === "teacher" && session.classroomId
@@ -24,9 +27,9 @@ export default async function CheckinPage() {
 
   return (
     <div>
-      <SectionTitle>Check-In / Check-Out Kiosk</SectionTitle>
+      <SectionTitle>{s.title}</SectionTitle>
       <p className="text-sm text-brand-navy/70 -mt-3 mb-6">
-        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · Select who is dropping off or picking up each child.
+        {new Date().toLocaleDateString(locale === "es" ? "es-ES" : "en-US", { weekday: "long", month: "long", day: "numeric" })} · {s.kioskSubtitle}
       </p>
 
       <div className="space-y-8">
@@ -36,7 +39,7 @@ export default async function CheckinPage() {
           return (
             <div key={classroom.id}>
               <h3 className="font-heading font-bold text-brand-navy mb-3">
-                {classroom.name} <span className="text-sm font-normal text-brand-navy/60">({classroom.age_group})</span>
+                {classroom.name} <span className="text-sm font-normal text-brand-navy/60">({translateAgeGroup(classroom.age_group, locale)})</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {roster.map((student) => {
@@ -62,10 +65,10 @@ export default async function CheckinPage() {
                           <p className="font-semibold text-brand-navy text-sm truncate">
                             {student.first_name} {student.last_name}
                           </p>
-                          <p className="text-xs text-brand-navy/60">{calcAge(student.dob)}</p>
+                          <p className="text-xs text-brand-navy/60">{calcAge(student.dob, locale)}</p>
                         </div>
                         <Badge color={status === "at_school" ? "green" : status === "picked_up" ? "gray" : "yellow"}>
-                          {status === "at_school" ? "At school" : status === "picked_up" ? "Picked up" : "Not arrived"}
+                          {status === "at_school" ? s.atSchool : status === "picked_up" ? s.pickedUp : s.notArrived}
                         </Badge>
                       </div>
 
@@ -85,13 +88,13 @@ export default async function CheckinPage() {
                             type="submit"
                             className={status === "not_arrived" ? "btn-primary px-3 py-1.5 text-xs" : "btn-yellow px-3 py-1.5 text-xs"}
                           >
-                            {status === "not_arrived" ? "Check In" : "Check Out"}
+                            {status === "not_arrived" ? s.checkIn : s.checkOut}
                           </button>
                         </form>
                       )}
                       {status === "picked_up" && attendance && (
                         <p className="text-xs text-brand-navy/60">
-                          Picked up at {attendance.check_out_time?.slice(11, 16)} by {attendance.check_out_by_name}
+                          {s.pickedUpAtLabel} {attendance.check_out_time?.slice(11, 16)} {s.byLabel} {attendance.check_out_by_name}
                         </p>
                       )}
                     </div>

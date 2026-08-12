@@ -13,17 +13,17 @@ export async function login(formData: FormData) {
   const next = String(formData.get("next") || "");
 
   if (!email || !password) {
-    redirect(`/login?error=${encodeURIComponent("Please enter your email and password.")}`);
+    redirect(`/login?error=missing_fields`);
   }
 
   const staff = getStaffByEmail(email);
   if (staff) {
     const ok = await verifyPassword(password, staff.password_hash);
     if (!ok) {
-      redirect(`/login?error=${encodeURIComponent("Incorrect password.")}`);
+      redirect(`/login?error=wrong_password`);
     }
     if (!staff.active) {
-      redirect(`/login?error=${encodeURIComponent("This staff account is inactive.")}`);
+      redirect(`/login?error=inactive_account`);
     }
     await setSessionCookie({
       sub: staff.id,
@@ -39,7 +39,7 @@ export async function login(formData: FormData) {
   if (guardian) {
     const ok = await verifyPassword(password, guardian.password_hash);
     if (!ok) {
-      redirect(`/login?error=${encodeURIComponent("Incorrect password.")}`);
+      redirect(`/login?error=wrong_password`);
     }
     const kids = getStudentsForGuardian(guardian.id);
     await setSessionCookie({
@@ -52,5 +52,5 @@ export async function login(formData: FormData) {
     redirect(next && next.startsWith("/parent") ? next : "/parent");
   }
 
-  redirect(`/login?error=${encodeURIComponent("We couldn't find an account with that email.")}`);
+  redirect(`/login?error=not_found`);
 }
