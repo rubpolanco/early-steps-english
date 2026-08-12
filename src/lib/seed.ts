@@ -55,7 +55,7 @@ export async function ensureSeeded() {
   // ---- Staff ----
   const staffPasswordHash = await hashPassword(DEMO_STAFF_PASSWORD);
   const staffDefs = [
-    { name: "Sofía Martínez", email: "admin@earlystepsenglish.com", role: "admin", classroom: null, phone: "(809) 555-0101" },
+    { name: "Elizabeth Guzman", email: "admin@earlystepsenglish.com", role: "admin", classroom: null, phone: "(809) 555-0101" },
     { name: "Jennifer Reyes", email: "jennifer@earlystepsenglish.com", role: "teacher", classroom: "Little Explorers", phone: "(809) 555-0102" },
     { name: "Carla Pimentel", email: "carla@earlystepsenglish.com", role: "teacher", classroom: "Curious Cubs", phone: "(809) 555-0103" },
     { name: "Daniel Ureña", email: "daniel@earlystepsenglish.com", role: "teacher", classroom: "Bright Sparks", phone: "(809) 555-0104" },
